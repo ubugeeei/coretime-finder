@@ -1,8 +1,10 @@
 import { Temporal as TemporalPolyfill } from "@js-temporal/polyfill";
 import { normalizeMinute } from "./timeMath";
 
+/** Instant-like inputs accepted by the availability calculator and test fixtures. */
 export type InstantInput = Date | number | Temporal.Instant;
 
+/** Local calendar metadata derived from an instant in a specific time zone. */
 export type LocalDateSnapshot = {
   dayOffset: number;
   isWeekend: boolean;
@@ -11,6 +13,11 @@ export type LocalDateSnapshot = {
 };
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/**
+ * Uses native Temporal when available and falls back to the packaged polyfill on mobile browsers
+ * that have not shipped the global yet.
+ */
 const TemporalRuntime: typeof Temporal =
   globalThis.Temporal ?? (TemporalPolyfill as typeof Temporal);
 
@@ -35,28 +42,34 @@ export function formatTimeZoneLabel(timeZone: string, dateInput: string): string
   return `${timeZone} (${formatTimeZoneOffset(timeZone, dateInput)})`;
 }
 
+/** Returns the ISO local date for an instant in a target time zone. */
 export function getDateInTimeZone(instantInput: InstantInput, timeZone: string): string {
   return instantFromInput(instantInput).toZonedDateTimeISO(timeZone).toPlainDate().toString();
 }
 
+/** Returns today's date in the selected reference zone, not in the browser's local zone. */
 export function getCurrentDateInTimeZone(timeZone: string): string {
   return TemporalRuntime.Now.instant().toZonedDateTimeISO(timeZone).toPlainDate().toString();
 }
 
+/** Provides a numeric current instant for reactive timeline snapshots. */
 export function getCurrentInstantEpochMilliseconds(): number {
   return TemporalRuntime.Now.instant().epochMilliseconds;
 }
 
+/** Provides an ISO timestamp for profile update metadata. */
 export function getCurrentInstantIsoString(): string {
   return TemporalRuntime.Now.instant().toString();
 }
 
+/** Projects an instant into local minutes after midnight in the requested time zone. */
 export function getLocalMinute(instantInput: InstantInput, timeZone: string): number {
   const zonedDateTime = instantFromInput(instantInput).toZonedDateTimeISO(timeZone);
 
   return zonedDateTime.hour * 60 + zonedDateTime.minute;
 }
 
+/** Returns local date/weekend information plus offset from the reference date. */
 export function getLocalDateSnapshot(
   instantInput: InstantInput,
   timeZone: string,
@@ -73,6 +86,7 @@ export function getLocalDateSnapshot(
   };
 }
 
+/** Converts a date and local minute in a time zone into the comparable UTC epoch timeline. */
 export function zonedTimeToUtcMs(dateInput: string, minuteOfDay: number, timeZone: string): number {
   return zonedDateTimeFromMinute(dateInput, minuteOfDay, timeZone).epochMilliseconds;
 }
@@ -96,6 +110,7 @@ function zonedDateTimeFromMinute(
   const date = TemporalRuntime.PlainDate.from(dateInput);
   const minute = normalizeMinute(minuteOfDay);
 
+  // Compatible disambiguation matches ordinary calendar behavior around DST gaps and repeats.
   return TemporalRuntime.ZonedDateTime.from(
     {
       day: date.day,

@@ -17,6 +17,12 @@ import {
 } from "./timeZoneMath";
 import type { InstantInput } from "./timeZoneMath";
 
+/**
+ * Samples the reference day into fixed-width slots and counts which members can attend each slot.
+ *
+ * All comparisons happen through an instant, so windows authored in different home time zones are
+ * compared on the same timeline before being projected back into the reference-zone UI.
+ */
 export function buildAvailabilitySlots(input: {
   members: readonly Member[];
   referenceDate: string;
@@ -47,6 +53,12 @@ export function buildAvailabilitySlots(input: {
   return slots;
 }
 
+/**
+ * Builds row data for each member's work windows, local day phases, and current local snapshot.
+ *
+ * The timeline segments are expressed in reference-zone minutes so rows align visually, while phase
+ * labels are calculated in each member's own home time zone.
+ */
 export function buildMemberTimelines(input: {
   members: readonly Member[];
   phaseReferenceInstant?: InstantInput;
@@ -66,6 +78,12 @@ export function buildMemberTimelines(input: {
   }));
 }
 
+/**
+ * Collapses qualifying coverage slots into candidate meeting windows.
+ *
+ * Adjacent slots are merged only when the active member set is identical, which keeps the displayed
+ * candidate participant list accurate for the full duration.
+ */
 export function findCandidateIntervals(
   slots: readonly CoverageSlot[],
   minParticipants: number,
@@ -116,12 +134,14 @@ export function findCandidateIntervals(
   return candidates.sort(candidateSort);
 }
 
+/** Returns the highest-attendance, longest, earliest candidate interval. */
 export function bestCandidate(
   candidates: readonly CandidateInterval[],
 ): CandidateInterval | undefined {
   return [...candidates].sort(candidateSort)[0];
 }
 
+/** Resolves member names in id order while tolerating stale ids from older candidate data. */
 export function memberNamesForIds(members: readonly Member[], ids: readonly MemberId[]): string[] {
   const membersById = new Map(members.map((member) => [member.id, member.name]));
 
@@ -250,6 +270,7 @@ function isMinuteInsideWindow(
   if (startMinute === endMinute) {
     return false;
   }
+  // Windows that cross midnight are represented by an end minute smaller than the start minute.
   return startMinute < endMinute
     ? startMinute <= minuteOfDay && minuteOfDay < endMinute
     : startMinute <= minuteOfDay || minuteOfDay < endMinute;

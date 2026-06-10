@@ -19,6 +19,12 @@ type ProfileInput = {
   selectedMemberId: Ref<MemberId | undefined>;
 };
 
+/**
+ * Owns local profile persistence and share URL restoration for the workbench.
+ *
+ * The composable mutates the same refs as the editor so loading a profile feels like replacing the
+ * current working set rather than navigating to a separate document.
+ */
 export function useWorkbenchProfiles(input: ProfileInput) {
   const profiles: Ref<WorkbenchProfile[]> = ref([]);
   const profileName = ref("Working set");
@@ -31,6 +37,7 @@ export function useWorkbenchProfiles(input: ProfileInput) {
     restoreShareSnapshot();
   });
 
+  /** Saves the current working set under the active profile id or a new timestamp id. */
   function saveProfileMut(): void {
     const name = profileName.value.trim() || "Untitled profile";
     const id = selectedProfileId.value ?? `profile-${Date.now()}`;
@@ -47,12 +54,14 @@ export function useWorkbenchProfiles(input: ProfileInput) {
     writeStoredProfiles(profiles.value);
   }
 
+  /** Leaves existing saved profiles untouched while preparing the form for a new profile name. */
   function newProfileMut(): void {
     selectedProfileId.value = undefined;
     profileName.value = "Working set";
     profileMessage.value = "Editing a new profile.";
   }
 
+  /** Replaces the editable workbench with a previously saved local snapshot. */
   function loadProfileMut(profileId: string): void {
     const profile = profiles.value.find((candidate) => candidate.id === profileId);
     if (profile === undefined) {
@@ -65,6 +74,7 @@ export function useWorkbenchProfiles(input: ProfileInput) {
     profileMessage.value = "Profile restored.";
   }
 
+  /** Removes a local profile without touching the currently edited members. */
   function deleteProfileMut(profileId: string): void {
     profiles.value = profiles.value.filter((profile) => profile.id !== profileId);
     if (selectedProfileId.value === profileId) {
@@ -74,6 +84,7 @@ export function useWorkbenchProfiles(input: ProfileInput) {
     writeStoredProfiles(profiles.value);
   }
 
+  /** Generates a share URL that embeds only the current snapshot, not the local profile list. */
   function createShareUrlMut(): void {
     if (typeof window === "undefined") {
       return;
@@ -85,6 +96,7 @@ export function useWorkbenchProfiles(input: ProfileInput) {
     profileMessage.value = "Share URL generated.";
   }
 
+  /** Copies the generated share URL when clipboard access is available. */
   async function copyShareUrlMut(): Promise<void> {
     createShareUrlMut();
     if (typeof navigator === "undefined" || navigator.clipboard === undefined) {

@@ -1,10 +1,21 @@
 import { memberId, workWindowId } from "./coretimeTypes";
 import type { Member, SerializedMember, SerializedWorkWindow, WorkWindow } from "./coretimeTypes";
 
+/**
+ * Converts live member records into plain JSON-safe objects for profiles and share URLs.
+ *
+ * Branded ids are intentionally erased here because the serialized shape crosses storage and URL
+ * boundaries where TypeScript brands have no meaning.
+ */
 export function serializeMembers(members: Member[]): SerializedMember[] {
   return members.map(serializeMember);
 }
 
+/**
+ * Restores serialized members into the domain shape used by the calculator and UI.
+ *
+ * This is the single place where string ids from storage are re-branded as member/window ids.
+ */
 export function deserializeMembers(members: SerializedMember[]): Member[] {
   return members.map(deserializeMember);
 }

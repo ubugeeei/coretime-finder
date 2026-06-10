@@ -1,6 +1,7 @@
 import { defineIsland, defineIslands } from "@vuerend/core";
 import type { WorkbenchBootstrapState } from "./workbenchTypes";
 
+/** Optional island props allow SSR bootstrap defaults to be filled in by the island component. */
 export type CoretimeWorkbenchIslandProps = Partial<WorkbenchBootstrapState>;
 
 /**

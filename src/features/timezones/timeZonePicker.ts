@@ -1,5 +1,6 @@
 import { formatTimeZoneLabel, formatTimeZoneOffset } from "../../availability/timeZoneMath";
 
+/** Curated map/search metadata for time zones that are useful in a distributed-team planner. */
 type CatalogEntry = {
   timeZone: string;
   city: string;
@@ -9,6 +10,7 @@ type CatalogEntry = {
   y: number;
 };
 
+/** Picker-ready time zone entry with labels calculated for the active reference date. */
 export type TimeZonePickerOption = CatalogEntry & {
   label: string;
   offset: string;
@@ -40,6 +42,12 @@ function projectLatitude(latitude: number): number {
   return ((90 - latitude) / 180) * 100;
 }
 
+/**
+ * A compact catalog of common collaboration zones.
+ *
+ * The runtime still accepts any supported IANA zone; this list only provides friendly city labels,
+ * map points, and aliases for the most likely choices.
+ */
 const TIME_ZONE_CATALOG: CatalogEntry[] = [
   zone("UTC", "Greenwich", "Universal", ["gmt", "greenwich", "remote"], 0, 51.5),
   zone("Africa/Cairo", "Cairo", "Egypt", ["egypt", "eg"], 31.24, 30.04),
@@ -117,6 +125,7 @@ export function buildTimeZonePickerOptions(
   });
 }
 
+/** Filters and ranks picker options by city, region, IANA name, offset, and aliases. */
 export function filterTimeZonePickerOptions(
   options: readonly TimeZonePickerOption[],
   queryInput: string,
@@ -140,6 +149,7 @@ export function mapTimeZonePickerOptions(
   return options.filter((option) => option.x > 0 && option.y > 0);
 }
 
+/** Creates a search-only option for supported zones outside the curated map catalog. */
 function fallbackEntry(timeZone: string): CatalogEntry {
   const parts = timeZone.split("/");
   const city = (parts.at(-1) ?? timeZone).replace(/_/g, " ");
@@ -155,6 +165,7 @@ function fallbackEntry(timeZone: string): CatalogEntry {
   };
 }
 
+/** Scores exact matches above prefix matches and broad substring matches. */
 function scoreOption(option: TimeZonePickerOption, query: string): number {
   const values = [
     option.timeZone,

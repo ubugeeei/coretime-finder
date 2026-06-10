@@ -1,5 +1,6 @@
 import type { TimeZoneCandidate } from "../../availability/coretimeTypes";
 
+/** Region-to-zone entry used by both client fallback and the API route. */
 type RegionTimeZone = {
   label: string;
   region: string;
@@ -7,6 +8,11 @@ type RegionTimeZone = {
   aliases: string[];
 };
 
+/**
+ * Fallback list for browsers that do not expose `Intl.supportedValuesOf("timeZone")`.
+ *
+ * The entries mirror the curated picker catalog so old browsers still get practical defaults.
+ */
 export const POPULAR_TIME_ZONES = [
   "Africa/Cairo",
   "America/Chicago",
@@ -39,6 +45,7 @@ export const POPULAR_TIME_ZONES = [
   "UTC",
 ];
 
+/** Small helper keeps the catalog entries readable without repeating object keys. */
 const zone = (
   label: string,
   region: string,
@@ -160,6 +167,7 @@ const REGION_TIME_ZONES: RegionTimeZone[] = [
   zone("UTC", "Universal", "UTC", ["utc", "gmt", "remote"]),
 ];
 
+/** Returns supported IANA zones with UTC pinned first for predictable default lists. */
 export function getSupportedTimeZones(): string[] {
   if (typeof Intl.supportedValuesOf === "function") {
     return withUtcFirst(Intl.supportedValuesOf("timeZone"));
@@ -168,6 +176,7 @@ export function getSupportedTimeZones(): string[] {
   return withUtcFirst(POPULAR_TIME_ZONES);
 }
 
+/** Checks an IANA time zone through `Intl.DateTimeFormat`, which has broad browser support. */
 export function isSupportedTimeZone(timeZone: string): boolean {
   try {
     new Intl.DateTimeFormat("en-US", { timeZone }).format(new Date());
@@ -177,6 +186,12 @@ export function isSupportedTimeZone(timeZone: string): boolean {
   }
 }
 
+/**
+ * Infers likely time zones from a user-entered region or city.
+ *
+ * The score is deliberately simple and deterministic: exact aliases beat prefixes, and prefixes
+ * beat substring matches. The API route and client fallback share this function so they agree.
+ */
 export function inferTimeZoneCandidates(
   regionInput: string,
   supportedTimeZones: readonly string[] = getSupportedTimeZones(),
@@ -225,6 +240,7 @@ export function inferTimeZoneCandidates(
   );
 }
 
+/** Parses the API response defensively before exposing candidates to the form UI. */
 export function parseTimeZoneResponse(value: unknown): TimeZoneCandidate[] {
   if (!isRecord(value) || !Array.isArray(value.candidates)) {
     return [];

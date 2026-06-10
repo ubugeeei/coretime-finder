@@ -12,6 +12,7 @@ import { inferTimeZoneCandidates } from "./timezoneInference";
 export const GET = defineHandler(function getTimeZoneCandidates(context) {
   const region = context.req.query("region") ?? "";
 
+  // Keep API responses small because the form only presents a short ranked suggestion list.
   return {
     candidates: inferTimeZoneCandidates(region).slice(0, 8),
   };

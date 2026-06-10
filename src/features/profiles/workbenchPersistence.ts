@@ -1,6 +1,7 @@
 import type { MemberColor } from "../../availability/coretimeTypes";
 import type { SerializedMember } from "../../availability/coretimeTypes";
 
+/** Versioned payload stored in local profiles and encoded into share URLs. */
 export type WorkbenchSnapshot = {
   version: 1;
   members: SerializedMember[];
@@ -9,6 +10,7 @@ export type WorkbenchSnapshot = {
   referenceTimeZone: string;
 };
 
+/** User-named local profile with a complete restorable workbench snapshot. */
 export type WorkbenchProfile = {
   id: string;
   name: string;
@@ -19,6 +21,12 @@ export type WorkbenchProfile = {
 const STORAGE_KEY = "core-time-finder:profiles";
 const MEMBER_COLORS = new Set<MemberColor>(["amber", "blue", "green", "rose", "teal"]);
 
+/**
+ * Encodes a snapshot for a URL query parameter.
+ *
+ * The URL-safe base64 variant avoids percent-encoding `+`, `/`, and padding characters in share
+ * links while still round-tripping arbitrary UTF-8 profile names and regions.
+ */
 export function encodeShareSnapshot(snapshot: WorkbenchSnapshot): string {
   const bytes = new TextEncoder().encode(JSON.stringify(snapshot));
   const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
@@ -26,6 +34,7 @@ export function encodeShareSnapshot(snapshot: WorkbenchSnapshot): string {
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
+/** Decodes a share URL payload and rejects unknown or malformed snapshot shapes. */
 export function decodeShareSnapshot(value: string): WorkbenchSnapshot | undefined {
   try {
     const padded = value
@@ -41,6 +50,7 @@ export function decodeShareSnapshot(value: string): WorkbenchSnapshot | undefine
   }
 }
 
+/** Reads locally saved profiles, returning an empty list when storage is unavailable or corrupted. */
 export function readStoredProfiles(): WorkbenchProfile[] {
   const storage = getLocalStorage();
   if (storage === undefined) {
@@ -56,6 +66,7 @@ export function readStoredProfiles(): WorkbenchProfile[] {
   }
 }
 
+/** Persists local profiles best-effort so private/embedded browser modes do not break the app. */
 export function writeStoredProfiles(profiles: readonly WorkbenchProfile[]): void {
   const storage = getLocalStorage();
   if (storage === undefined) {

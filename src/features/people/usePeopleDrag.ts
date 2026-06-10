@@ -4,6 +4,12 @@ import type { CoretimeWorkbenchVm } from "../workbench/useCoretimeWorkbench";
 
 type DropPlacement = "before" | "after";
 
+/**
+ * Maintains drag-preview state for reordering people before committing the final order.
+ *
+ * Native drag events provide the cursor geometry, while the workbench VM remains the source of
+ * truth for the persisted order once the drop completes.
+ */
 export function usePeopleDrag(vm: CoretimeWorkbenchVm) {
   const draggingMemberId = ref<MemberId | undefined>();
   const dropTargetMemberId = ref<MemberId | undefined>();
@@ -11,6 +17,7 @@ export function usePeopleDrag(vm: CoretimeWorkbenchVm) {
   const previewMembers = ref<readonly Member[] | undefined>();
   const displayMembers = computed(() => previewMembers.value ?? vm.members.value);
 
+  /** Starts a local preview list so the UI can animate reordering without mutating the VM yet. */
   function startDrag(memberId: MemberId, event: DragEvent): void {
     draggingMemberId.value = memberId;
     previewMembers.value = [...vm.members.value];
@@ -20,6 +27,7 @@ export function usePeopleDrag(vm: CoretimeWorkbenchVm) {
     }
   }
 
+  /** Updates the preview order based on whether the cursor is in the top or bottom half. */
   function dragOver(targetMemberId: MemberId, event: DragEvent): void {
     if (event.dataTransfer !== null) {
       event.dataTransfer.dropEffect = "move";
@@ -44,6 +52,7 @@ export function usePeopleDrag(vm: CoretimeWorkbenchVm) {
     movePreview(targetMemberId, placement);
   }
 
+  /** Commits the preview order to the workbench once the drop target accepts the item. */
   function dropOn(): void {
     const orderedMemberIds = previewMembers.value?.map((member) => member.id);
     endDrag();
@@ -52,12 +61,14 @@ export function usePeopleDrag(vm: CoretimeWorkbenchVm) {
     }
   }
 
+  /** Clears transient drag state after drop, cancel, or dragend. */
   function endDrag(): void {
     draggingMemberId.value = undefined;
     dropTargetMemberId.value = undefined;
     previewMembers.value = undefined;
   }
 
+  /** Rebuilds the preview list with the dragged member inserted around the current target. */
   function movePreview(targetMemberId: MemberId, placement: DropPlacement): void {
     const sourceMemberId = draggingMemberId.value;
     const currentMembers = previewMembers.value;
