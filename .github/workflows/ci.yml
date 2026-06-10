@@ -1,0 +1,154 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pull-request-title:
+    name: pull request title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Require conventional title without Codex marker
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node .github/scripts/validatePullRequestTitle.ts
+
+  install:
+    name: install
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Print tool versions
+        run: node .github/scripts/printToolVersions.ts
+
+  format:
+    name: format
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Check formatting
+        run: pnpm exec vp fmt --check
+
+  typescript:
+    name: typescript
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Check TypeScript
+        run: pnpm exec tsc --noEmit
+
+  vize-typecheck:
+    name: vize typecheck
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Check Vue files with Vize
+        run: pnpm exec vp exec vize check "src/**/*.vue"
+
+  vize-lint:
+    name: vize lint
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Lint Vue files with Vize
+        run: pnpm exec vp exec vize lint "src/**/*.vue"
+
+  unit:
+    name: unit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Run unit tests
+        run: pnpm exec vp test run
+
+  build:
+    name: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup project
+        uses: ./.github/actions/setup-project
+
+      - name: Build with Vite task
+        run: pnpm exec vp run build
+
+  assets:
+    name: assets
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate OG image
+        run: node .github/scripts/validateAssets.ts
+
+  structure:
+    name: structure
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate repository layout and source conventions
+        run: node .github/scripts/validateRepositoryStructure.ts
+
+  temporal-contract:
+    name: temporal contract
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate native Temporal requirement
+        run: node .github/scripts/validateTemporalContract.ts

@@ -1,0 +1,23 @@
+{
+  "name": "coretime-finder",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "@mdi/js": "7.4.47",
+    "@vuerend/core": "0.3.0",
+    "vue": "3.6.0-beta.14"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@vizejs/vite-plugin": "0.196.0",
+    "typescript": "6.0.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.1.24",
+    "vite-plus": "0.1.24",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.24",
+    "vize": "0.196.0",
+    "void": "0.9.3"
+  },
+  "packageManager": "pnpm@11.5.3"
+}
