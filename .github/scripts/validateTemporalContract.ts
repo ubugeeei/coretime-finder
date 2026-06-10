@@ -1,32 +1,51 @@
 import { assertCi, findFilesMatching, isSourceFile, readTextFile } from "./ciHelpers.ts";
 
 /**
- * Validates the native Temporal runtime contract.
+ * Validates the Temporal runtime contract.
  *
- * The app is allowed to require browsers with native Temporal support. CI protects that decision by
- * rejecting polyfill-style helpers and fallback checks in production source while requiring README
- * documentation that clearly says unsupported browsers are not handled.
+ * The app uses Temporal for availability math and ships a packaged fallback for browsers without
+ * native Temporal support. CI protects that decision by requiring the dependency and README
+ * documentation while still rejecting Date/Intl-based time-zone math regressions.
  */
 const readme = readTextFile("README.md");
+const packageJson = JSON.parse(readTextFile("package.json")) as {
+  dependencies?: Record<string, string>;
+};
+const timeZoneMath = readTextFile("src/availability/timeZoneMath.ts");
 
 assertCi(
-  /native JavaScript[\s\S]*Temporal/.test(readme),
-  "README.md must document the native JavaScript Temporal requirement.",
+  /JavaScript [`"]?Temporal[`"]?/.test(readme),
+  "README.md must document the JavaScript Temporal runtime.",
 );
 assertCi(
-  /no [\s\S]*Temporal[\s\S]*polyfill/.test(readme),
-  "README.md must state that no Temporal polyfill is used.",
+  /packaged polyfill/.test(readme),
+  "README.md must document the packaged Temporal polyfill fallback.",
+);
+assertCi(
+  packageJson.dependencies?.["@js-temporal/polyfill"] !== undefined,
+  "package.json must include @js-temporal/polyfill.",
+);
+assertCi(
+  timeZoneMath.includes('from "@js-temporal/polyfill"'),
+  "src/availability/timeZoneMath.ts must import @js-temporal/polyfill.",
+);
+assertCi(
+  /globalThis\.Temporal\s*\?\?/.test(timeZoneMath),
+  "src/availability/timeZoneMath.ts must prefer native Temporal and fall back to the polyfill.",
 );
 
 const productionSource = (filePath: string): boolean =>
   isSourceFile(filePath) && !filePath.endsWith(".test.ts");
-const fallbackPatterns =
-  /getTemporal|nativeTemporal|typeof\s+Temporal\s*===\s*["']undefined["']|Temporal\s*===\s*undefined/;
-const fallbackFiles = findFilesMatching(["src", "routes"], fallbackPatterns, productionSource);
+const forbiddenRuntimeHelpers = /getTemporal|nativeTemporal|Temporal\s*===\s*undefined/;
+const forbiddenRuntimeHelperFiles = findFilesMatching(
+  ["src", "routes"],
+  forbiddenRuntimeHelpers,
+  productionSource,
+);
 
 assertCi(
-  fallbackFiles.length === 0,
-  `Temporal fallback code is not allowed:\n${fallbackFiles.join("\n")}`,
+  forbiddenRuntimeHelperFiles.length === 0,
+  `Use the centralized Temporal runtime fallback only:\n${forbiddenRuntimeHelperFiles.join("\n")}`,
 );
 
 const dateMathFiles = findFilesMatching(

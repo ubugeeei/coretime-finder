@@ -20,7 +20,7 @@ assertCi(
 );
 assertCi(
   !existsSync("src/availability/nativeTemporal.ts"),
-  "Do not add Temporal polyfill helpers.",
+  "Do not add a second Temporal runtime helper.",
 );
 
 const barrelExports = findFilesMatching(["src", "routes"], /export\s+\*/, isSourceFile);

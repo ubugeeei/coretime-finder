@@ -95,7 +95,7 @@ jobs:
         uses: ./.github/actions/setup-project
 
       - name: Lint Vue files with Vize
-        run: pnpm exec vp exec vize lint "src/**/*.vue"
+        run: pnpm exec vp exec vize lint --preset opinionated --max-warnings 0 "src/**/*.vue"
 
   unit:
     name: unit
@@ -150,5 +150,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Validate native Temporal requirement
+      - name: Validate Temporal runtime contract
         run: node .github/scripts/validateTemporalContract.ts

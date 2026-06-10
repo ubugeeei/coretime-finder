@@ -1,0 +1,144 @@
+.profile-panel {
+  display: grid;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-border);
+  padding: 16px 0 18px;
+}
+
+.profile-heading,
+.profile-tools,
+.profile-actions,
+.profile-list,
+.profile-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-heading {
+  justify-content: space-between;
+}
+
+.profile-title,
+.profile-count,
+.profile-message,
+.profile-item-name,
+.profile-item-date {
+  margin: 0;
+}
+
+.profile-title {
+  font-size: var(--font-size-section);
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.profile-count,
+.profile-message,
+.profile-item-date,
+.share-url-label {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.profile-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  align-items: end;
+}
+
+.profile-actions {
+  flex-wrap: wrap;
+  justify-content: end;
+}
+
+.profile-name {
+  flex: 1 1 220px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid var(--color-border-strong);
+  padding: 7px 12px;
+  font-weight: 750;
+}
+
+.icon,
+.profile-icon {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.button.primary {
+  color: var(--color-bg);
+  background: var(--color-ink);
+}
+
+.button.secondary,
+.delete-button {
+  color: var(--color-ink);
+  background: transparent;
+}
+
+.share-field,
+.share-label {
+  display: grid;
+  gap: 6px;
+}
+
+.share-note {
+  color: var(--color-muted);
+  font-size: var(--font-size-sm);
+}
+
+.share-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 10px;
+}
+
+.profile-list {
+  flex-wrap: wrap;
+}
+
+.profile-item {
+  border: 1px solid var(--color-border);
+  padding: 0;
+}
+
+.profile-item.selected {
+  background: var(--color-surface-strong);
+}
+
+.profile-load-button,
+.delete-button {
+  border: 0;
+  color: var(--color-ink);
+  background: transparent;
+}
+
+.profile-load-button {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 1px 8px;
+  min-width: 176px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.profile-icon {
+  grid-row: span 2;
+  align-self: center;
+}
+
+.delete-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  min-height: 42px;
+  border-inline-start: 1px solid var(--color-border);
+}

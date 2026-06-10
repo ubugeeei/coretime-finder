@@ -1,0 +1,139 @@
+.panel {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.section-heading,
+.member-row {
+  display: flex;
+  align-items: center;
+}
+
+.section-heading {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.section-subtitle,
+.undo-hint {
+  color: var(--color-muted);
+  font-size: var(--font-size-lg);
+}
+
+.undo-hint {
+  margin: 0 0 12px;
+}
+
+.member-list {
+  display: grid;
+  position: relative;
+}
+
+.member-row {
+  position: relative;
+  min-width: 0;
+  border-top: 1px solid var(--color-border);
+  background: transparent;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.member-row.dragging {
+  background: var(--color-surface-strong);
+  opacity: 0.44;
+}
+
+.member-row.drop-before::before,
+.member-row.drop-after::after {
+  position: absolute;
+  inset-inline: 32px;
+  z-index: var(--z-member-drop);
+  height: 1px;
+  background: var(--color-ink);
+  content: "";
+}
+
+.member-row.drop-before::before {
+  top: -1px;
+}
+
+.member-row.drop-after::after {
+  bottom: -1px;
+}
+
+.member-move {
+  transition: transform 190ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.member-enter-active,
+.member-leave-active {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.member-enter-from,
+.member-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.member-leave-active {
+  position: absolute;
+  width: 100%;
+}
+
+.drag-button,
+.delete-button,
+.undo-button {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  color: var(--color-muted);
+  background: transparent;
+}
+
+.drag-button,
+.delete-button {
+  width: 32px;
+  min-height: 52px;
+}
+
+.drag-button {
+  cursor: grab;
+}
+
+.drag-button.grabbing {
+  cursor: grabbing;
+}
+
+.undo-button {
+  grid-auto-flow: column;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--color-border);
+  padding: 5px 8px;
+  color: var(--color-ink);
+  font-weight: 750;
+}
+
+.undo-button:disabled {
+  color: var(--color-muted);
+  opacity: 0.55;
+}
+
+.icon {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
