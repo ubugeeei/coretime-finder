@@ -150,5 +150,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Validate Temporal runtime contract
+      - name: Validate Temporal polyfill contract
         run: node .github/scripts/validateTemporalContract.ts

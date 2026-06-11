@@ -3,9 +3,9 @@ import { assertCi, findFilesMatching, isSourceFile, readTextFile } from "./ciHel
 /**
  * Validates the Temporal runtime contract.
  *
- * The app uses Temporal for availability math and ships a packaged fallback for browsers without
- * native Temporal support. CI protects that decision by requiring the dependency and README
- * documentation while still rejecting Date/Intl-based time-zone math regressions.
+ * The app uses Temporal for availability math and ships temporal-polyfill-lite for browsers without
+ * native Temporal support. CI protects that decision by requiring the dependency, README
+ * documentation, and a centralized native-then-polyfill runtime.
  */
 const readme = readTextFile("README.md");
 const packageJson = JSON.parse(readTextFile("package.json")) as {
@@ -18,25 +18,30 @@ assertCi(
   "README.md must document the JavaScript Temporal runtime.",
 );
 assertCi(
-  /packaged polyfill/.test(readme),
-  "README.md must document the packaged Temporal polyfill fallback.",
+  /temporal-polyfill-lite/.test(readme),
+  "README.md must document temporal-polyfill-lite usage.",
 );
 assertCi(
-  packageJson.dependencies?.["@js-temporal/polyfill"] !== undefined,
-  "package.json must include @js-temporal/polyfill.",
+  packageJson.dependencies?.["temporal-polyfill-lite"] !== undefined,
+  "package.json must include temporal-polyfill-lite.",
 );
 assertCi(
-  timeZoneMath.includes('from "@js-temporal/polyfill"'),
-  "src/availability/timeZoneMath.ts must import @js-temporal/polyfill.",
+  packageJson.dependencies?.["@js-temporal/polyfill"] === undefined,
+  "package.json must not include @js-temporal/polyfill.",
 );
 assertCi(
-  /globalThis\.Temporal\s*\?\?/.test(timeZoneMath),
+  timeZoneMath.includes('from "temporal-polyfill-lite"'),
+  "src/availability/timeZoneMath.ts must import temporal-polyfill-lite.",
+);
+assertCi(
+  /globalThis[\s\S]*\.Temporal[\s\S]*\?\?/.test(timeZoneMath),
   "src/availability/timeZoneMath.ts must prefer native Temporal and fall back to the polyfill.",
 );
 
 const productionSource = (filePath: string): boolean =>
   isSourceFile(filePath) && !filePath.endsWith(".test.ts");
-const forbiddenRuntimeHelpers = /getTemporal|nativeTemporal|Temporal\s*===\s*undefined/;
+const forbiddenRuntimeHelpers =
+  /getTemporal|nativeTemporal|typeof\s+Temporal\s*===\s*["']undefined["']|Temporal\s*===\s*undefined/;
 const forbiddenRuntimeHelperFiles = findFilesMatching(
   ["src", "routes"],
   forbiddenRuntimeHelpers,

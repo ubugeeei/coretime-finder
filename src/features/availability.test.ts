@@ -32,15 +32,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function describeWithTemporal(name: string, suite: () => void): void {
-  if (typeof Temporal === "undefined") {
-    describe.skip(`${name} (requires native Temporal)`, suite);
-    return;
-  }
-
-  describe(name, suite);
-}
-
 describe("inferTimeZoneCandidates", () => {
   it("infers common city names", () => {
     expect(inferTimeZoneCandidates("San Francisco")[0]?.timeZone).toBe("America/Los_Angeles");
@@ -54,7 +45,7 @@ describe("inferTimeZoneCandidates", () => {
   });
 });
 
-describeWithTemporal("createWorkbenchBootstrapState", () => {
+describe("createWorkbenchBootstrapState", () => {
   it("uses UTC as the default reference timezone", () => {
     expect(createWorkbenchBootstrapState().referenceTimeZone).toBe("UTC");
   });
@@ -89,14 +80,14 @@ describeWithTemporal("createWorkbenchBootstrapState", () => {
   });
 });
 
-describeWithTemporal("formatTimeZoneOffset", () => {
+describe("formatTimeZoneOffset", () => {
   it("formats UTC offsets with sign and minutes", () => {
     expect(formatTimeZoneOffset("UTC", "2026-06-10")).toBe("UTC+00:00");
     expect(formatTimeZoneLabel("Asia/Tokyo", "2026-06-10")).toBe("Asia/Tokyo (UTC+09:00)");
   });
 });
 
-describeWithTemporal("Temporal time zone conversion", () => {
+describe("Temporal time zone conversion", () => {
   it("converts local wall clock time to an instant", () => {
     expect(new Date(zonedTimeToUtcMs("2026-06-10", 9 * 60, "Asia/Tokyo")).toISOString()).toBe(
       "2026-06-10T00:00:00.000Z",
@@ -121,7 +112,7 @@ describe("getSupportedTimeZones", () => {
   });
 });
 
-describeWithTemporal("time zone picker search", () => {
+describe("time zone picker search", () => {
   it("matches country names and keeps map coordinates", () => {
     const options = buildTimeZonePickerOptions(
       ["Asia/Tokyo", "Europe/Paris", "Europe/London", "America/Los_Angeles"],
@@ -138,7 +129,7 @@ describeWithTemporal("time zone picker search", () => {
   });
 });
 
-describeWithTemporal("share snapshots", () => {
+describe("share snapshots", () => {
   it("round-trips a workbench snapshot through a URL-safe payload", () => {
     const snapshot = {
       members: createWorkbenchBootstrapState().members,
@@ -155,7 +146,7 @@ describeWithTemporal("share snapshots", () => {
   });
 });
 
-describeWithTemporal("local profile storage", () => {
+describe("local profile storage", () => {
   it("writes and reads saved profiles", () => {
     const store = new Map<string, string>();
     const storage = {
@@ -194,7 +185,7 @@ describe("parseClock", () => {
   });
 });
 
-describeWithTemporal("day phase snapshots", () => {
+describe("day phase snapshots", () => {
   it("uses the current instant for member status pills", () => {
     const [member] = deserializeMembers(createWorkbenchBootstrapState().members);
     const [timeline] = buildMemberTimelines({
@@ -238,7 +229,7 @@ describeWithTemporal("day phase snapshots", () => {
   });
 });
 
-describeWithTemporal("coretime calculation", () => {
+describe("coretime calculation", () => {
   it("finds a two-person overlap in the reference timezone", () => {
     const members: Member[] = [
       {
