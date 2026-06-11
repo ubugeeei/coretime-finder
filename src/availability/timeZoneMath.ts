@@ -1,4 +1,4 @@
-import { Temporal as TemporalPolyfill } from "@js-temporal/polyfill";
+import { Temporal } from "temporal-polyfill-lite";
 import { normalizeMinute } from "./timeMath";
 
 /** Instant-like inputs accepted by the availability calculator and test fixtures. */
@@ -13,19 +13,19 @@ export type LocalDateSnapshot = {
 };
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+type TemporalNamespace = typeof Temporal;
+type GlobalWithTemporal = typeof globalThis & { Temporal?: TemporalNamespace };
 
 /**
- * Uses native Temporal when available and falls back to the packaged polyfill on mobile browsers
- * that have not shipped the global yet.
+ * Uses native Temporal when available and falls back to temporal-polyfill-lite on browsers that
+ * have not shipped the global yet.
  */
-const TemporalRuntime: typeof Temporal =
-  globalThis.Temporal ?? (TemporalPolyfill as typeof Temporal);
+const TemporalRuntime: TemporalNamespace = (globalThis as GlobalWithTemporal).Temporal ?? Temporal;
 
 /**
  * Formats the UTC offset for a time zone on a specific reference date.
  *
- * The calculation intentionally uses Temporal's time-zone database instead of approximating with
- * `Date` or `Intl`. Browsers without native Temporal support use the packaged polyfill.
+ * The calculation intentionally uses Temporal instead of approximating with `Date` or `Intl`.
  */
 export function formatTimeZoneOffset(timeZone: string, dateInput: string): string {
   const offsetMinutes =

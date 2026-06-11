@@ -5,4 +5,4 @@ Core Time Finder visualizes possible overlap windows for people working across d
 ## Browser Runtime
 
 The interactive workbench uses JavaScript `Temporal` for time zone math.
-Browsers without native `Temporal` support use the packaged polyfill.
+Browsers without native `Temporal` support use the packaged `temporal-polyfill-lite` fallback.
